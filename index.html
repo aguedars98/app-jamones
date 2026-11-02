@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es"><head>
+<html lang="es">
+<head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maestro Jamonero Pro</title>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -66,7 +67,7 @@ async function sync(manual){
   }catch(e){ if(manual) toast("Sin conexión: trabajando en modo local",true) }
   ic.classList.remove("fa-spin");
 }
-function push(payload){ // text/plain evita el preflight CORS de Apps Script
+function push(payload){
   fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>toast("No se pudo enviar a Sheets",true));
 }
 function add(sheet,obj){(db[sheet]=db[sheet]||[]).push(obj);save();push({sheet,rowObj:obj});}
@@ -111,18 +112,15 @@ const gk=(t,w)=>{const k=Object.keys(t).find(k=>nk(k).includes(w));return k===un
 const pr=t=>num(gk(t,"precio")), ds=t=>String(gk(t,"descrip")||gk(t,"concepto")||"Servicio");
 const cat=c=>db[T].filter(t=>nk(gk(t,"categ")).startsWith(nk(c).slice(0,5)));
 const optT=(arr,pre)=>arr.map(t=>`<option value="${pr(t)}" data-n="${esc(ds(t))}">${esc(ds(t))} (${pre}${eur(pr(t))})</option>`).join("");
+
 function vCot(){
   return `<div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8 max-w-2xl mx-auto space-y-5">
-  <div class="border-b pb-4"><h2 class="text-xl font-extrabold text-jamon-900">Cotizador Profesional</h2><p class="text-xs text-slate-500">Presupuesto por pieza o por kilo, con suplementos, extras y descuento</p></div>
+  <div class="border-b pb-4"><h2 class="text-xl font-extrabold text-jamon-900">Cotizador Profesional</h2><p class="text-xs text-slate-500">Calcula presupuestos según las tarifas oficiales de tu Google Sheet</p></div>
   <div class="grid sm:grid-cols-2 gap-4">
-   <div><label class="${LB}">Cliente</label><select id="q-cli" class="${IN}" onchange="calc()"><option value="">— Sin cliente —</option>${db[C].map((c,i)=>`<option value="${i}">${esc(c["Nombre Completo"])}</option>`).join("")}</select></div>
-   <div><label class="${LB}">Estrategia de cobro</label><select id="q-modo" class="${IN}" onchange="calc()"><option value="pieza">Precio fijo por pieza</option><option value="kilo">Por kilo (€/kg × peso)</option></select></div>
+   <div><label class="${LB}">Cliente</label><select id="q-cli" class="${IN}"><option value="">— Sin cliente —</option>${db[C].map((c,i)=>`<option value="${i}">${esc(c["Nombre Completo"])}</option>`).join("")}</select></div>
+   <div><label class="${LB}">Servicio base</label><select id="q-base" class="${IN}" onchange="calc()">${optT(cat("Corte Base"),"")||'<option value="0" data-n="Servicio">⚠ Sin tarifas «Corte Base» en el Sheet</option>'}</select></div>
   </div>
-  <div class="grid sm:grid-cols-2 gap-4">
-   <div id="q-base-wrap"></div>
-   <div><label class="${LB}">Peso de la pieza (kg)</label><input type="number" id="q-kg" value="7.5" step="0.1" min="0" class="${IN} font-bold" oninput="calc()"></div>
-  </div>
-  <div><label class="${LB}">Condición de la pieza</label><select id="q-sup" class="${IN}" onchange="calc()"><option value="0" data-n="">En perfecto estado (sin suplemento)</option>${optT(cat("Suplementos"),"+")}</select></div>
+  <div><label class="${LB}">Condición de la pieza (suplemento)</label><select id="q-sup" class="${IN}" onchange="calc()"><option value="0" data-n="">En perfecto estado (sin suplemento)</option>${optT(cat("Suplementos"),"+")}</select></div>
   <div><label class="${LB}">Servicios extra</label><div class="grid sm:grid-cols-2 gap-2">${cat("Extras").concat(cat("Otros")).map(t=>`<label class="flex items-center space-x-3 text-xs font-semibold bg-slate-50 p-3 rounded-xl border cursor-pointer"><input type="checkbox" class="q-ext" value="${pr(t)}" data-n="${esc(ds(t))}" onchange="calc()"><span>${esc(ds(t))} <b class="text-jamon-900">(+${eur(pr(t))})</b></span></label>`).join("")||'<p class="text-xs text-slate-400">Sin extras definidos</p>'}</div></div>
   <div class="grid sm:grid-cols-2 gap-4">
    <div><label class="${LB}">Descuento (€)</label><input type="number" id="q-dto" value="0" min="0" step="0.5" class="${IN}" oninput="calc()"></div>
@@ -134,29 +132,25 @@ function vCot(){
    <div class="grid sm:grid-cols-2 gap-3"><button onclick="whatsapp()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl text-sm font-bold flex items-center justify-center space-x-2"><i class="fa-brands fa-whatsapp text-lg"></i><span>Enviar por WhatsApp</span></button><button onclick="copiar()" class="bg-white/10 hover:bg-white/20 py-3.5 rounded-xl text-sm font-bold"><i class="fa-regular fa-copy"></i> Copiar mensaje</button></div>
   </div></div>`;
 }
+
 let Q={};
 function calc(){
-  const modo=$("q-modo").value, wrap=$("q-base-wrap");
-  const kmode=modo==="kilo", had=$("q-base");
-  if(!had||had.dataset.m!==modo){
-    wrap.innerHTML=kmode?`<label class="${LB}">Precio por kilo (€/kg)</label><input type="number" id="q-base" data-m="kilo" value="6" step="0.1" min="0" class="${IN} font-bold" oninput="calc()">`
-      :`<label class="${LB}">Servicio base</label><select id="q-base" data-m="pieza" class="${IN}" onchange="calc()">${optT(cat("Corte Base"),"")||'<option value="0" data-n="Servicio">⚠ Sin tarifas «Corte Base» en el Sheet</option>'}</select>`;
-  }
-  const b=$("q-base"), kg=num($("q-kg").value), pb=num(b.value);
-  const base=kmode?pb*kg:pb, bn=kmode?"Loncheado profesional":(b.selectedOptions[0]?.dataset.n||"Servicio base");
+  const b=$("q-base"), pb=num(b.value), bn=b.selectedOptions[0]?.dataset.n||"Servicio base";
   const sel=$("q-sup").selectedOptions[0], sup=num($("q-sup").value), sn=sel?.dataset.n||"";
   const ext=[...document.querySelectorAll(".q-ext:checked")].map(c=>({n:c.dataset.n,v:num(c.value)}));
+  const base=pb;
   const dto=Math.min(num($("q-dto").value),base+sup+ext.reduce((a,e)=>a+e.v,0));
   const sub=base+sup+ext.reduce((a,e)=>a+e.v,0)-dto, iva=$("q-iva").checked?sub*IVA:0, tot=sub+iva;
-  Q={kmode,kg,pb,base,bn,sn,sup,ext,dto,sub,iva,tot};
+  Q={base,bn,sn,sup,ext,dto,sub,iva,tot};
   const ln=(a,b,s)=>`<div class="flex justify-between"><span>${a}</span><b>${s||""}${b}</b></div>`;
-  $("q-des").innerHTML=ln(kmode?`${esc(bn)} · ${kg} kg × ${eur(pb)}/kg`:esc(bn),eur(base))+(sup?ln(esc(sn),eur(sup),"+"):"")+ext.map(e=>ln(esc(e.n),eur(e.v),"+")).join("")+(dto?ln("Descuento",eur(dto),"−"):"")+(iva?ln(`IVA ${IVA*100}%`,eur(iva),"+"):"");
+  $("q-des").innerHTML=ln(esc(bn),eur(base))+(sup?ln(esc(sn),eur(sup),"+"):"")+ext.map(e=>ln(esc(e.n),eur(e.v),"+")).join("")+(dto?ln("Descuento",eur(dto),"−"):"")+(iva?ln(`IVA ${IVA*100}%`,eur(iva),"+"):"");
   $("q-tot").textContent=eur(tot);
 }
+
 function mensaje(){
   const i=$("q-cli").value, c=i!==""?db[C][i]:null, f=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"long",year:"numeric"});
   const L=[`*${NEGOCIO.toUpperCase()}* · Presupuesto`,`${f}`,"",c?`Estimado/a ${c["Nombre Completo"]}:`:"Buenos días:","","Le detallo el presupuesto para el corte de su pieza:","",
-   `• *Servicio:* ${Q.kmode?`Loncheado a cuchillo (${eur(Q.pb)}/kg)`:Q.bn}`,`• *Peso de la pieza:* ${Q.kg.toLocaleString("es-ES")} kg`];
+   `• *Servicio:* ${Q.bn}`];
   if(Q.sup)L.push(`• *Condición de la pieza:* ${Q.sn} (+${eur(Q.sup)})`);
   Q.ext.forEach(e=>L.push(`• *Extra:* ${e.n} (+${eur(e.v)})`));
   if(Q.dto)L.push(`• *Descuento:* −${eur(Q.dto)}`);
