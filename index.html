@@ -1,749 +1,191 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maestro Jamonero Pro | Edición de Lujo</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        jamon: {
-                            50: '#fcf8f5',
-                            100: '#f7ede4',
-                            200: '#edd8c7',
-                            700: '#8a2b38',
-                            800: '#621722',
-                            900: '#420d14',
-                            950: '#260508'
-                        },
-                        gold: {
-                            400: '#dfc27d',
-                            500: '#c5a059',
-                            600: '#a3813c'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maestro Jamonero Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{jamon:{50:'#fcf8f5',100:'#f7ede4',200:'#edd8c7',700:'#8a2b38',800:'#621722',900:'#420d14',950:'#260508'},gold:{400:'#dfc27d',500:'#c5a059',600:'#a3813c'}},fontFamily:{sans:['Plus Jakarta Sans','sans-serif']}}}}</script>
 </head>
 <body class="bg-jamon-50 text-slate-800 font-sans min-h-screen pb-24">
+<header class="bg-jamon-900 text-white sticky top-0 z-50 border-b border-gold-500/20 shadow-xl">
+ <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+  <div class="flex items-center space-x-3">
+   <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-jamon-950 text-xl"><i class="fa-solid fa-utensils"></i></div>
+   <div><h1 class="font-extrabold text-base sm:text-lg tracking-wider text-gold-400">MAESTRO JAMONERO</h1><p class="text-[11px] text-jamon-200 uppercase tracking-widest">Control &amp; Gestión Pro</p></div>
+  </div>
+  <button onclick="sync(true)" class="bg-gold-500/20 hover:bg-gold-500/30 text-gold-400 border border-gold-500/40 px-3 py-2 rounded-xl text-xs font-bold flex items-center space-x-2"><i class="fa-solid fa-rotate" id="syncIcon"></i><span class="hidden sm:inline">Sincronizar</span></button>
+ </div>
+</header>
+<nav class="bg-jamon-800 sticky top-[67px] z-40 border-b border-jamon-700"><div class="max-w-7xl mx-auto px-2 flex overflow-x-auto space-x-1.5 py-2.5" id="tabs"></div></nav>
+<main class="max-w-7xl mx-auto px-4 py-6" id="main"></main>
 
-    <!-- Header Elegante -->
-    <header class="bg-jamon-900 text-white sticky top-0 z-50 border-b border-gold-500/20 shadow-xl backdrop-blur-md bg-jamon-900/95">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-jamon-950 font-black text-xl shadow-lg ring-2 ring-gold-400/30">
-                    <i class="fa-solid fa-utensils"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-base sm:text-lg tracking-wider text-gold-400">MAESTRO JAMONERO</h1>
-                    <p class="text-[11px] text-jamon-200 uppercase tracking-widest font-medium">Control & Gestión Pro</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="syncWithGoogleSheet()" id="syncBtn" class="bg-gold-500/20 hover:bg-gold-500/30 text-gold-400 border border-gold-500/40 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-sm">
-                    <i class="fa-solid fa-rotate" id="syncIcon"></i>
-                    <span class="hidden sm:inline">Sincronizar Sheet</span>
-                </button>
-            </div>
-        </div>
-    </header>
+<div id="modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+ <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden">
+  <div class="bg-jamon-900 px-6 py-4 flex justify-between items-center"><h3 id="mtitle" class="font-extrabold text-gold-400"></h3><button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 text-white text-lg">&times;</button></div>
+  <div class="p-6 overflow-y-auto space-y-4" id="mbody"></div>
+ </div>
+</div>
 
-    <!-- Navegación Superior por Pestañas -->
-    <nav class="bg-jamon-800 text-jamon-100 shadow-md sticky top-[67px] z-40 border-b border-jamon-700">
-        <div class="max-w-7xl mx-auto px-2 flex overflow-x-auto space-x-1.5 py-2.5 scrollbar-none">
-            <button onclick="switchTab('dashboard')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-jamon-900 text-gold-400 shadow-inner flex items-center space-x-2 border border-gold-500/30" data-tab="dashboard">
-                <i class="fa-solid fa-chart-pie"></i> <span>Panel</span>
-            </button>
-            <button onclick="switchTab('pedidos')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap hover:bg-jamon-700/60 text-slate-200 flex items-center space-x-2" data-tab="pedidos">
-                <i class="fa-solid fa-clipboard-list"></i> <span>Pedidos</span>
-            </button>
-            <button onclick="switchTab('piezas')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap hover:bg-jamon-700/60 text-slate-200 flex items-center space-x-2" data-tab="piezas">
-                <i class="fa-solid fa-drumstick-bite"></i> <span>Inventario</span>
-            </button>
-            <button onclick="switchTab('clientes')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap hover:bg-jamon-700/60 text-slate-200 flex items-center space-x-2" data-tab="clientes">
-                <i class="fa-solid fa-users"></i> <span>Clientes</span>
-            </button>
-            <button onclick="switchTab('tarifas')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap hover:bg-jamon-700/60 text-slate-200 flex items-center space-x-2" data-tab="tarifas">
-                <i class="fa-solid fa-tags"></i> <span>Tarifas</span>
-            </button>
-            <button onclick="switchTab('calculadora')" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap hover:bg-jamon-700/60 text-slate-200 flex items-center space-x-2" data-tab="calculadora">
-                <i class="fa-solid fa-calculator text-gold-400"></i> <span>Cotizador Pro</span>
-            </button>
-        </div>
-    </nav>
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyWturf5n7Pjnrm9R1Sa3BiEo83I-A0ID1CuLXIVZ91tRsJxwzL_t1ckTxFW8-v4U6B/exec";
+const NEGOCIO="Maestro Jamonero", TEL_PAIS="34", IVA=0.21;
+const DEF_TARIFAS=[
+ {"ID Concepto":"TAR-01","Categoria":"Corte Base","Descripción":"Jamón (corte completo loncheado)","Precio Base (€)":45,"Unidad":"Pieza"},
+ {"ID Concepto":"TAR-02","Categoria":"Corte Base","Descripción":"Paleta (corte completo loncheado)","Precio Base (€)":35,"Unidad":"Pieza"},
+ {"ID Concepto":"TAR-03","Categoria":"Suplementos","Descripción":"Pieza muy jugosa / blanda","Precio Base (€)":8,"Unidad":"Pieza"},
+ {"ID Concepto":"TAR-04","Categoria":"Suplementos","Descripción":"Pieza muy seca / dura","Precio Base (€)":10,"Unidad":"Pieza"},
+ {"ID Concepto":"TAR-05","Categoria":"Extras","Descripción":"Corte de huesos para caldo","Precio Base (€)":5,"Unidad":"Pieza"}];
+const T="Precios y Tarifas",C="Clientes",P="Inventario y Piezas",O="Pedidos y Servicios";
+const ID={[C]:"ID Cliente",[P]:"ID Pieza",[O]:"ID Pedido"};
+let db={[C]:[],[P]:[],[O]:[],[T]:DEF_TARIFAS}, tab="dashboard";
+const TABS=[["dashboard","chart-pie","Panel"],["pedidos","clipboard-list","Pedidos"],["piezas","drumstick-bite","Inventario"],["clientes","users","Clientes"],["tarifas","tags","Tarifas"],["cotizador","calculator","Cotizador Pro"]];
 
-    <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const n=parseFloat(String(v??"").replace(",","."));return isNaN(n)?0:n};
+const eur=n=>n.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const newId=p=>p+"-"+Date.now().toString(36).toUpperCase().slice(-5);
+const today=()=>new Date().toISOString().slice(0,10);
+const IN="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-jamon-700 outline-none";
+const LB="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5";
+const BTN="w-full bg-jamon-900 hover:bg-jamon-800 text-gold-400 py-3.5 rounded-xl font-bold shadow-lg transition";
 
-        <!-- TAB 1: DASHBOARD -->
-        <section id="tab-dashboard" class="tab-content space-y-6">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 text-jamon-50 text-6xl font-black group-hover:scale-110 transition pointer-events-none">📦</div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pedidos Activos</p>
-                    <h3 class="text-3xl font-extrabold text-jamon-900 mt-2" id="stat-pedidos">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 text-amber-50 text-6xl font-black group-hover:scale-110 transition pointer-events-none">🍖</div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Piezas en Proceso</p>
-                    <h3 class="text-3xl font-extrabold text-amber-700 mt-2" id="stat-piezas">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 hover:shadow-md transition relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 text-emerald-50 text-6xl font-black group-hover:scale-110 transition pointer-events-none">👥</div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Clientes</p>
-                    <h3 class="text-3xl font-extrabold text-emerald-700 mt-2" id="stat-clientes">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80 hover:shadow-md transition relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 text-blue-50 text-6xl font-black group-hover:scale-110 transition pointer-events-none">💶</div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingresos Estimados</p>
-                    <h3 class="text-3xl font-extrabold text-blue-800 mt-2" id="stat-ingresos">0 €</h3>
-                </div>
-            </div>
+/* ---------- Datos ---------- */
+function load(){try{const s=JSON.parse(localStorage.getItem("jamones_db"));if(s)db=Object.assign(db,s)}catch(e){}}
+function save(){try{localStorage.setItem("jamones_db",JSON.stringify(db))}catch(e){}}
+async function sync(manual){
+  const ic=$("syncIcon");ic.classList.add("fa-spin");
+  try{
+    const d=await (await fetch(SCRIPT_URL+"?action=getData")).json();
+    const falta=[C,P,O,T].filter(k=>!Array.isArray(d[k]));
+    for(const k of [C,P,O,T]) if(Array.isArray(d[k])&&(k!==T||d[k].length)) db[k]=d[k];
+    save();render();
+    if(falta.length) toast("Pestañas no encontradas en el Sheet: "+falta.join(", "),true);
+    else toast("Sincronizado con Google Sheets");
+  }catch(e){ if(manual) toast("Sin conexión: trabajando en modo local",true) }
+  ic.classList.remove("fa-spin");
+}
+function push(payload){ // text/plain evita el preflight CORS de Apps Script
+  fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>toast("No se pudo enviar a Sheets",true));
+}
+function add(sheet,obj){(db[sheet]=db[sheet]||[]).push(obj);save();push({sheet,rowObj:obj});}
+function del(sheet,i){
+  if(!confirm("¿Seguro que deseas eliminar este registro?"))return;
+  const [r]=db[sheet].splice(i,1);save();push({action:"delete",sheet,id:r[ID[sheet]]});render();toast("Registro eliminado");
+}
+function toast(m,err){
+  const d=document.createElement("div");
+  d.className="fixed bottom-5 right-5 bg-jamon-900 text-gold-400 px-5 py-3 rounded-2xl shadow-2xl z-[60] text-xs font-extrabold border "+(err?"border-red-400":"border-gold-500/30");
+  d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);
+}
 
-            <!-- Accesos Rápidos Premium -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
-                <h3 class="font-bold text-lg text-jamon-900 flex items-center">
-                    <span class="w-8 h-8 rounded-lg bg-gold-400/20 text-gold-600 flex items-center justify-center mr-2 text-sm">⚡</span>
-                    Acciones Rápidas
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <button onclick="switchTab('pedidos'); openModal('pedido')" class="p-4 bg-gradient-to-br from-jamon-50 to-jamon-100/50 hover:from-jamon-100 hover:to-jamon-200/50 text-jamon-900 rounded-2xl border border-jamon-200 font-bold flex items-center justify-center space-x-3 transition shadow-xs group">
-                        <div class="w-10 h-10 rounded-xl bg-jamon-900 text-gold-400 flex items-center justify-center shadow group-hover:scale-105 transition"><i class="fa-solid fa-plus"></i></div>
-                        <span>Nuevo Pedido</span>
-                    </button>
-                    <button onclick="switchTab('piezas'); openModal('pieza')" class="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 hover:from-amber-100 hover:to-amber-200/50 text-amber-950 rounded-2xl border border-amber-200 font-bold flex items-center justify-center space-x-3 transition shadow-xs group">
-                        <div class="w-10 h-10 rounded-xl bg-amber-700 text-white flex items-center justify-center shadow group-hover:scale-105 transition"><i class="fa-solid fa-drumstick-bite"></i></div>
-                        <span>Registrar Pieza</span>
-                    </button>
-                    <button onclick="switchTab('clientes'); openModal('cliente')" class="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 hover:from-emerald-100 hover:to-emerald-200/50 text-emerald-950 rounded-2xl border border-emerald-200 font-bold flex items-center justify-center space-x-3 transition shadow-xs group">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow group-hover:scale-105 transition"><i class="fa-solid fa-user-plus"></i></div>
-                        <span>Nuevo Cliente</span>
-                    </button>
-                </div>
-            </div>
-        </section>
+/* ---------- Vistas ---------- */
+function switchTab(t){tab=t;render()}
+function head(title,sub,btn,modal){return `<div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-4"><div><h2 class="text-lg font-extrabold text-jamon-900">${title}</h2><p class="text-xs text-slate-500">${sub}</p></div>${btn?`<button onclick="openModal('${modal}')" class="bg-jamon-900 text-gold-400 px-4 py-2.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-plus"></i> ${btn}</button>`:""}</div>`}
+function table(cols,rows){return `<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-jamon-50 text-jamon-900 uppercase text-[11px] tracking-wider">${"<tr>"+cols.map(c=>`<th class="p-4">${c}</th>`).join("")+"</tr>"}</thead><tbody class="divide-y divide-slate-100">${rows||`<tr><td class="p-6 text-slate-400" colspan="9">Sin registros todavía</td></tr>`}</tbody></table></div>`}
+const trash=(s,i)=>`<button onclick="del('${s}',${i})" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600"><i class="fa-solid fa-trash text-xs"></i></button>`;
+const pill=(t,c)=>`<span class="px-2.5 py-1 rounded-full text-xs font-bold ${c}">${esc(t)}</span>`;
 
-        <!-- TAB 2: PEDIDOS -->
-        <section id="tab-pedidos" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <div>
-                    <h2 class="text-lg font-extrabold text-jamon-900">Gestión de Pedidos</h2>
-                    <p class="text-xs text-slate-500">Cola de trabajo y prioridades</p>
-                </div>
-                <button onclick="openModal('pedido')" class="bg-jamon-900 hover:bg-jamon-800 text-gold-400 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i> <span>Añadir Pedido</span>
-                </button>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-jamon-50 text-jamon-900 uppercase text-[11px] font-bold tracking-wider border-b border-jamon-100">
-                            <tr>
-                                <th class="p-4">Pedido / Fecha</th>
-                                <th class="p-4">Cliente</th>
-                                <th class="p-4">Pieza</th>
-                                <th class="p-4">Prioridad</th>
-                                <th class="p-4">Estado</th>
-                                <th class="p-4">Total</th>
-                                <th class="p-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-pedidos-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+function render(){
+  $("tabs").innerHTML=TABS.map(([id,ic,l])=>`<button onclick="switchTab('${id}')" class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap flex items-center space-x-2 ${id===tab?"bg-jamon-900 text-gold-400 border border-gold-500/30":"text-slate-200 hover:bg-jamon-700/60"}"><i class="fa-solid fa-${ic}"></i><span>${l}</span></button>`).join("");
+  $("main").innerHTML=({dashboard:vDash,pedidos:vPed,piezas:vPz,clientes:vCli,tarifas:vTar,cotizador:vCot})[tab]();
+  if(tab==="cotizador")calc();
+}
+function vDash(){
+  const act=db[O].filter(o=>!["Entregado","Cobrado"].includes(o["Estado Pedido"]));
+  const ing=db[O].reduce((a,o)=>a+num(o["Total A Cobrar (€)"]),0);
+  const k=(l,v,c)=>`<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${l}</p><h3 class="text-3xl font-extrabold ${c} mt-2">${v}</h3></div>`;
+  const q=(t,m,ic)=>`<button onclick="tab='${t}';openModal('${m}')" class="p-4 bg-jamon-100/60 hover:bg-jamon-100 text-jamon-900 rounded-2xl border border-jamon-200 font-bold flex items-center justify-center space-x-3"><i class="fa-solid fa-${ic}"></i><span>${{pedido:"Nuevo Pedido",pieza:"Registrar Pieza",cliente:"Nuevo Cliente"}[m]}</span></button>`;
+  return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">${k("Pedidos activos",act.length,"text-jamon-900")}${k("Piezas en proceso",db[P].filter(p=>p["Estado Pieza"]!=="Entregado"&&p["Estado Pieza"]!=="Terminado").length,"text-amber-700")}${k("Clientes",db[C].length,"text-emerald-700")}${k("Ingresos estimados",eur(ing),"text-blue-800")}</div>
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6"><h3 class="font-bold text-jamon-900 mb-4">Acciones rápidas</h3><div class="grid sm:grid-cols-3 gap-4">${q("pedidos","pedido","plus")}${q("piezas","pieza","drumstick-bite")}${q("clientes","cliente","user-plus")}</div></div>`;
+}
+function vPed(){return head("Gestión de Pedidos","Cola de trabajo y prioridades","Añadir Pedido","pedido")+table(["Pedido / Fecha","Cliente","Pieza","Prioridad","Estado","Total",""],db[O].map((o,i)=>`<tr><td class="p-4 font-bold text-jamon-900">${esc(o["ID Pedido"])}<br><span class="text-[11px] font-normal text-slate-400">${esc(String(o["Fecha Pedido"]).slice(0,10))}</span></td><td class="p-4">${esc(o["ID Cliente"])}</td><td class="p-4 text-slate-600">${esc(o["ID Pieza"])}</td><td class="p-4">${pill(o["Prioridad"]||"Normal",o["Prioridad"]==="Alta/Urgente"?"bg-red-100 text-red-700":"bg-slate-100 text-slate-600")}</td><td class="p-4">${pill(o["Estado Pedido"]||"Pendiente","bg-emerald-100 text-emerald-800")}</td><td class="p-4 font-extrabold text-jamon-900">${eur(num(o["Total A Cobrar (€)"]))}</td><td class="p-4 text-right">${trash(O,i)}</td></tr>`).join(""))}
+function vPz(){return head("Inventario y Piezas","Control de pesos, curación y estado","Nueva Pieza","pieza")+`<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">${db[P].map((p,i)=>`<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3"><div class="flex justify-between"><div><span class="text-[10px] font-black text-gold-600 uppercase">${esc(p["Tipo"])}</span><h3 class="font-extrabold text-jamon-900 text-lg">${esc(p["Marca/Origen"]||"Sin marca")}</h3></div>${pill(p["Estado Pieza"]||"En espera",p["Estado Pieza"]==="Terminado"?"bg-emerald-100 text-emerald-800":"bg-amber-100 text-amber-800")}</div><div class="text-xs space-y-1.5 bg-slate-50 p-3 rounded-xl"><p class="flex justify-between"><span>Propietario</span><b>${esc(p["Cliente Propietario"])}</b></p><p class="flex justify-between"><span>Peso entrada</span><b>${num(p["Peso Entrada (kg)"])} kg</b></p><p class="flex justify-between"><span>Sobres (salida)</span><b>${num(p["Peso Salida Sobres (kg)"])} kg</b></p><p class="flex justify-between"><span>Condición</span><b>${esc(p["Condición Pieza"]||"Normal")}</b></p></div><div class="pt-2 border-t flex justify-between items-center text-xs"><span class="text-slate-400">ID: ${esc(p["ID Pieza"])}</span>${trash(P,i)}</div></div>`).join("")||'<p class="text-slate-400">Sin piezas todavía</p>'}</div>`}
+function vCli(){return head("Directorio de Clientes","Amigos, familiares y conocidos","Añadir Cliente","cliente")+table(["Nombre","Teléfono","Relación","Preferencias de corte",""],db[C].map((c,i)=>`<tr><td class="p-4 font-bold text-jamon-900">${esc(c["Nombre Completo"])}</td><td class="p-4"><a href="tel:${esc(c["Teléfono"])}" class="text-jamon-700 font-semibold underline">${esc(c["Teléfono"])}</a></td><td class="p-4">${pill(c["Relación/Contacto"]||"-","bg-slate-100 text-slate-700")}</td><td class="p-4 text-xs text-slate-600">${esc(c["Preferencias de Corte"]||"Ninguna")}</td><td class="p-4 text-right">${trash(C,i)}</td></tr>`).join(""))}
+function vTar(){return head("Tarifas y Suplementos","Se editan en la hoja «Precios y Tarifas» de Google Sheets")+table(["Categoría","Descripción","Precio","Unidad"],db[T].map(t=>`<tr><td class="p-4">${pill(t["Categoria"],"bg-jamon-50 text-jamon-800 border border-jamon-200")}</td><td class="p-4 font-semibold">${esc(t["Descripción"])}</td><td class="p-4 font-black text-jamon-900">${eur(num(t["Precio Base (€)"]))}</td><td class="p-4 text-xs text-slate-500">${esc(t["Unidad"])}</td></tr>`).join(""))}
 
-        <!-- TAB 3: PIEZAS -->
-        <section id="tab-piezas" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <div>
-                    <h2 class="text-lg font-extrabold text-jamon-900">Inventario y Piezas</h2>
-                    <p class="text-xs text-slate-500">Control de pesos, curación y estado</p>
-                </div>
-                <button onclick="openModal('pieza')" class="bg-jamon-900 hover:bg-jamon-800 text-gold-400 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i> <span>Nueva Pieza</span>
-                </button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="grid-piezas"></div>
-        </section>
+/* ---------- Cotizador ---------- */
+const cat=c=>db[T].filter(t=>t["Categoria"]===c);
+const optT=(arr,pre)=>arr.map(t=>`<option value="${num(t["Precio Base (€)"])}" data-n="${esc(t["Descripción"])}">${esc(t["Descripción"])} (${pre}${eur(num(t["Precio Base (€)"]))})</option>`).join("");
+function vCot(){
+  return `<div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8 max-w-2xl mx-auto space-y-5">
+  <div class="border-b pb-4"><h2 class="text-xl font-extrabold text-jamon-900">Cotizador Profesional</h2><p class="text-xs text-slate-500">Presupuesto por pieza o por kilo, con suplementos, extras y descuento</p></div>
+  <div class="grid sm:grid-cols-2 gap-4">
+   <div><label class="${LB}">Cliente</label><select id="q-cli" class="${IN}" onchange="calc()"><option value="">— Sin cliente —</option>${db[C].map((c,i)=>`<option value="${i}">${esc(c["Nombre Completo"])}</option>`).join("")}</select></div>
+   <div><label class="${LB}">Estrategia de cobro</label><select id="q-modo" class="${IN}" onchange="calc()"><option value="pieza">Precio fijo por pieza</option><option value="kilo">Por kilo (€/kg × peso)</option></select></div>
+  </div>
+  <div class="grid sm:grid-cols-2 gap-4">
+   <div id="q-base-wrap"></div>
+   <div><label class="${LB}">Peso de la pieza (kg)</label><input type="number" id="q-kg" value="7.5" step="0.1" min="0" class="${IN} font-bold" oninput="calc()"></div>
+  </div>
+  <div><label class="${LB}">Condición de la pieza</label><select id="q-sup" class="${IN}" onchange="calc()"><option value="0" data-n="">En perfecto estado (sin suplemento)</option>${optT(cat("Suplementos"),"+")}</select></div>
+  <div><label class="${LB}">Servicios extra</label><div class="grid sm:grid-cols-2 gap-2">${cat("Extras").concat(cat("Otros")).map(t=>`<label class="flex items-center space-x-3 text-xs font-semibold bg-slate-50 p-3 rounded-xl border cursor-pointer"><input type="checkbox" class="q-ext" value="${num(t["Precio Base (€)"])}" data-n="${esc(t["Descripción"])}" onchange="calc()"><span>${esc(t["Descripción"])} <b class="text-jamon-900">(+${eur(num(t["Precio Base (€)"]))})</b></span></label>`).join("")||'<p class="text-xs text-slate-400">Sin extras definidos</p>'}</div></div>
+  <div class="grid sm:grid-cols-2 gap-4">
+   <div><label class="${LB}">Descuento (€)</label><input type="number" id="q-dto" value="0" min="0" step="0.5" class="${IN}" oninput="calc()"></div>
+   <label class="flex items-center space-x-3 text-sm font-semibold mt-6"><input type="checkbox" id="q-iva" onchange="calc()" class="w-4 h-4"><span>Añadir IVA (${IVA*100}%)</span></label>
+  </div>
+  <div class="bg-gradient-to-br from-jamon-900 to-jamon-950 text-white p-6 rounded-2xl space-y-4 border border-gold-500/30">
+   <div class="text-xs text-jamon-100 space-y-1.5 border-b border-white/10 pb-4" id="q-des"></div>
+   <div><p class="text-[11px] text-gold-400 font-extrabold uppercase tracking-widest">Total presupuestado</p><h3 class="text-4xl font-black" id="q-tot">0,00 €</h3></div>
+   <div class="grid sm:grid-cols-2 gap-3"><button onclick="whatsapp()" class="bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl text-sm font-bold flex items-center justify-center space-x-2"><i class="fa-brands fa-whatsapp text-lg"></i><span>Enviar por WhatsApp</span></button><button onclick="copiar()" class="bg-white/10 hover:bg-white/20 py-3.5 rounded-xl text-sm font-bold"><i class="fa-regular fa-copy"></i> Copiar mensaje</button></div>
+  </div></div>`;
+}
+let Q={};
+function calc(){
+  const modo=$("q-modo").value, wrap=$("q-base-wrap");
+  const kmode=modo==="kilo", had=$("q-base");
+  if(!had||had.dataset.m!==modo){
+    wrap.innerHTML=kmode?`<label class="${LB}">Precio por kilo (€/kg)</label><input type="number" id="q-base" data-m="kilo" value="6" step="0.1" min="0" class="${IN} font-bold" oninput="calc()">`
+      :`<label class="${LB}">Servicio base</label><select id="q-base" data-m="pieza" class="${IN}" onchange="calc()">${optT(cat("Corte Base"),"")}</select>`;
+  }
+  const b=$("q-base"), kg=num($("q-kg").value), pb=num(b.value);
+  const base=kmode?pb*kg:pb, bn=kmode?"Loncheado profesional":(b.selectedOptions[0]?.dataset.n||"Servicio base");
+  const sel=$("q-sup").selectedOptions[0], sup=num($("q-sup").value), sn=sel?.dataset.n||"";
+  const ext=[...document.querySelectorAll(".q-ext:checked")].map(c=>({n:c.dataset.n,v:num(c.value)}));
+  const dto=Math.min(num($("q-dto").value),base+sup+ext.reduce((a,e)=>a+e.v,0));
+  const sub=base+sup+ext.reduce((a,e)=>a+e.v,0)-dto, iva=$("q-iva").checked?sub*IVA:0, tot=sub+iva;
+  Q={kmode,kg,pb,base,bn,sn,sup,ext,dto,sub,iva,tot};
+  const ln=(a,b,s)=>`<div class="flex justify-between"><span>${a}</span><b>${s||""}${b}</b></div>`;
+  $("q-des").innerHTML=ln(kmode?`${esc(bn)} · ${kg} kg × ${eur(pb)}/kg`:esc(bn),eur(base))+(sup?ln(esc(sn),eur(sup),"+"):"")+ext.map(e=>ln(esc(e.n),eur(e.v),"+")).join("")+(dto?ln("Descuento",eur(dto),"−"):"")+(iva?ln(`IVA ${IVA*100}%`,eur(iva),"+"):"");
+  $("q-tot").textContent=eur(tot);
+}
+function mensaje(){
+  const i=$("q-cli").value, c=i!==""?db[C][i]:null, f=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"long",year:"numeric"});
+  const L=[`*${NEGOCIO.toUpperCase()}* · Presupuesto`,`${f}`,"",c?`Estimado/a ${c["Nombre Completo"]}:`:"Buenos días:","","Le detallo el presupuesto para el corte de su pieza:","",
+   `• *Servicio:* ${Q.kmode?`Loncheado a cuchillo (${eur(Q.pb)}/kg)`:Q.bn}`,`• *Peso de la pieza:* ${Q.kg.toLocaleString("es-ES")} kg`];
+  if(Q.sup)L.push(`• *Condición de la pieza:* ${Q.sn} (+${eur(Q.sup)})`);
+  Q.ext.forEach(e=>L.push(`• *Extra:* ${e.n} (+${eur(e.v)})`));
+  if(Q.dto)L.push(`• *Descuento:* −${eur(Q.dto)}`);
+  if(Q.iva)L.push(`• *IVA ${IVA*100}%:* ${eur(Q.iva)}`);
+  L.push("",`*TOTAL: ${eur(Q.tot)}*${Q.iva?" (IVA incluido)":""}`,"","El servicio incluye loncheado profesional a cuchillo, envasado al vacío en sobres individuales y entrega de los huesos.","","¿Le parece bien para proceder? Quedo a su disposición para cualquier consulta.","Un cordial saludo.");
+  return L.join("\n");
+}
+function whatsapp(){
+  const i=$("q-cli").value; let tel=i!==""?String(db[C][i]["Teléfono"]).replace(/\D/g,""):"";
+  if(tel.length===9)tel=TEL_PAIS+tel;
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensaje())}`,"_blank");
+}
+function copiar(){navigator.clipboard.writeText(mensaje()).then(()=>toast("Mensaje copiado"),()=>toast("No se pudo copiar",true))}
 
-        <!-- TAB 4: CLIENTES -->
-        <section id="tab-clientes" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <div>
-                    <h2 class="text-lg font-extrabold text-jamon-900">Directorio de Clientes</h2>
-                    <p class="text-xs text-slate-500">Amigos, familiares y conocidos</p>
-                </div>
-                <button onclick="openModal('cliente')" class="bg-jamon-900 hover:bg-jamon-800 text-gold-400 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i> <span>Añadir Cliente</span>
-                </button>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-jamon-50 text-jamon-900 uppercase text-[11px] font-bold tracking-wider border-b border-jamon-100">
-                            <tr>
-                                <th class="p-4">Nombre</th>
-                                <th class="p-4">Teléfono</th>
-                                <th class="p-4">Relación</th>
-                                <th class="p-4">Preferencias de Corte</th>
-                                <th class="p-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-clientes-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+/* ---------- Formularios ---------- */
+const fld=(l,h)=>`<div><label class="${LB}">${l}</label>${h}</div>`;
+const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join("");
+function openModal(t){
+  const m=$("modal");m.classList.remove("hidden");m.classList.add("flex");
+  const cl=opts(db[C].map(c=>c["Nombre Completo"]));
+  const F={
+   cliente:["Nuevo cliente",`<form onsubmit="gCli(event)" class="space-y-4">${fld("Nombre completo",`<input id="f1" required class="${IN}">`)}${fld("Teléfono",`<input id="f2" type="tel" required class="${IN}">`)}${fld("Relación",`<select id="f3" class="${IN}">${opts(["Amigo","Familiar","Conocido"])}</select>`)}${fld("Dirección / zona",`<input id="f4" class="${IN}">`)}${fld("Preferencias de corte",`<input id="f5" placeholder="Ej: sobres 100 g, loncha fina" class="${IN}">`)}<button class="${BTN}">Guardar cliente</button></form>`],
+   pieza:["Nueva pieza",`<form onsubmit="gPz(event)" class="space-y-4">${fld("Propietario",`<select id="f1" class="${IN}">${cl||"<option>Sin clientes</option>"}</select>`)}<div class="grid grid-cols-2 gap-4">${fld("Tipo",`<select id="f2" class="${IN}">${opts(["Jamón","Paleta"])}</select>`)}${fld("Marca / origen",`<input id="f3" required class="${IN}">`)}</div><div class="grid grid-cols-2 gap-4">${fld("Peso entrada (kg)",`<input id="f4" type="number" step="0.1" value="7.5" required class="${IN}">`)}${fld("Condición",`<select id="f5" class="${IN}">${opts(["Normal","Muy jugosa / blanda","Muy seca / dura","Con moho / desperfecto"])}</select>`)}</div><button class="${BTN}">Guardar pieza</button></form>`],
+   pedido:["Nuevo pedido",`<form onsubmit="gPed(event)" class="space-y-4">${fld("Cliente",`<select id="f1" class="${IN}">${cl||"<option>Sin clientes</option>"}</select>`)}${fld("Pieza asociada",`<select id="f2" class="${IN}">${db[P].map(p=>`<option value="${esc(p["ID Pieza"])}">${esc(p["Tipo"])} - ${esc(p["Marca/Origen"])} (${esc(p["Cliente Propietario"])})</option>`).join("")||"<option>Sin piezas</option>"}</select>`)}<div class="grid grid-cols-2 gap-4">${fld("Prioridad",`<select id="f3" class="${IN}">${opts(["Normal","Alta/Urgente"])}</select>`)}${fld("Total (€)",`<input id="f4" type="number" step="0.1" value="45" required class="${IN}">`)}</div><button class="${BTN}">Crear pedido</button></form>`]}[t];
+  $("mtitle").textContent=F[0];$("mbody").innerHTML=F[1];
+}
+function closeModal(){const m=$("modal");m.classList.add("hidden");m.classList.remove("flex")}
+const v=i=>$("f"+i).value.trim();
+function fin(msg){closeModal();render();toast(msg)}
+function gCli(e){e.preventDefault();add(C,{"ID Cliente":newId("CLI"),"Nombre Completo":v(1),"Teléfono":v(2),"Relación/Contacto":v(3),"Dirección / Zona":v(4),"Preferencias de Corte":v(5),"Confirmación Requisitos":"Sí","Notas":""});fin("Cliente guardado")}
+function gPz(e){e.preventDefault();add(P,{"ID Pieza":newId("PZ"),"Cliente Propietario":v(1),"Tipo":v(2),"Marca/Origen":v(3),"Peso Entrada (kg)":num(v(4)),"Peso Salida Sobres (kg)":0,"Estado Pieza":"En espera","Condición Pieza":v(5),"Fecha Recepción":today(),"Notas/Observaciones":"Registrado desde la app"});fin("Pieza registrada")}
+function gPed(e){e.preventDefault();const t=num(v(4));add(O,{"ID Pedido":newId("PED"),"ID Cliente":v(1),"ID Pieza":v(2),"Fecha Pedido":today(),"Prioridad":v(3),"Estado Pedido":"Pendiente","Precio Servicio Base (€)":t,"Suplementos Aplicados (€)":0,"Descuento (€)":0,"Total A Cobrar (€)":t,"Estado Pago":"Pendiente","Confirmación Cliente":"Confirmado","Observaciones":""});fin("Pedido creado")}
 
-        <!-- TAB 5: TARIFAS -->
-        <section id="tab-tarifas" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <div>
-                    <h2 class="text-lg font-extrabold text-jamon-900">Tarifas y Suplementos</h2>
-                    <p class="text-xs text-slate-500">Sincronizado directamente con Google Sheets</p>
-                </div>
-                <button onclick="syncWithGoogleSheet()" class="bg-jamon-900 text-gold-400 px-4 py-2 rounded-xl text-xs font-bold shadow">Actualizar Tarifas</button>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-jamon-50 text-jamon-900 uppercase text-[11px] font-bold tracking-wider border-b border-jamon-100">
-                            <tr>
-                                <th class="p-4">Categoría</th>
-                                <th class="p-4">Descripción</th>
-                                <th class="p-4">Precio (€)</th>
-                                <th class="p-4">Unidad</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-tarifas-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 6: COTIZADOR PRO E INTUITIVO -->
-        <section id="tab-calculadora" class="tab-content hidden space-y-4">
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8 max-w-2xl mx-auto space-y-6">
-                <div class="flex justify-between items-center border-b pb-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-jamon-900 flex items-center">
-                            <span class="w-8 h-8 rounded-lg bg-gold-400/20 text-gold-600 flex items-center justify-center mr-2 text-base">✨</span>
-                            Cotizador Profesional
-                        </h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Calcula presupuestos reales adaptados al gramaje o pieza</p>
-                    </div>
-                    <span class="text-[11px] bg-jamon-50 text-jamon-800 font-bold px-3 py-1.5 rounded-full border border-jamon-200">Modo Flexible</span>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Estrategia de Cobro</label>
-                        <select id="cot-modo" class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold bg-slate-50 focus:ring-2 focus:ring-jamon-700 outline-none" onchange="cambiarModoCotizador()">
-                            <option value="pieza">Precio Fijo por Pieza (Jamón / Paleta)</option>
-                            <option value="kilo">Cálculo por Kilo (Precio por kg × Peso real)</option>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-1.5" id="label-tipo-pieza">Servicio Base</label>
-                            <select id="cot-servicio" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-jamon-700 outline-none" onchange="calcularPresupuestoReal()"></select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Peso de la Pieza (kg)</label>
-                            <input type="number" id="cot-kilos" value="7.5" step="0.1" class="w-full border border-slate-300 rounded-xl p-3 text-sm font-extrabold text-jamon-900 bg-white focus:ring-2 focus:ring-jamon-700 outline-none" oninput="calcularPresupuestoReal()">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-1.5">Condición de la Pieza (Suplemento)</label>
-                        <select id="cot-suplemento" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-jamon-700 outline-none" onchange="calcularPresupuestoReal()"></select>
-                    </div>
-
-                    <div class="border-t pt-4">
-                        <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-2">Servicios y Extras Opcionales</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="cot-extras-container"></div>
-                    </div>
-
-                    <!-- Ticket Desglose -->
-                    <div class="bg-gradient-to-br from-jamon-900 to-jamon-950 text-white p-6 rounded-2xl shadow-lg space-y-4 mt-6 border border-gold-500/30">
-                        <div class="text-xs text-jamon-100 space-y-1.5 font-medium border-b border-white/10 pb-4" id="cot-desglose"></div>
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-1">
-                            <div>
-                                <p class="text-[11px] text-gold-400 font-extrabold uppercase tracking-widest">Total Presupuestado</p>
-                                <h3 class="text-4xl font-black text-white tracking-tight" id="cot-total">0.00 €</h3>
-                            </div>
-                            <button onclick="compartirWhatsAppPro()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold shadow-lg transition flex items-center justify-center space-x-2.5 active:scale-95">
-                                <i class="fa-brands fa-whatsapp text-lg"></i> <span>Enviar WhatsApp VIP</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- MODAL GENERAL -->
-    <div id="modal-general" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] flex flex-col border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div class="bg-jamon-900 text-white px-6 py-4 flex justify-between items-center border-b border-gold-500/20">
-                <h3 id="modal-title" class="font-extrabold text-base text-gold-400">Nuevo Registro</h3>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition text-lg">&times;</button>
-            </div>
-            <div class="p-6 overflow-y-auto flex-1 space-y-4" id="modal-body"></div>
-        </div>
-    </div>
-
-    <!-- Script de la App -->
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWturf5n7Pjnrm9R1Sa3BiEo83I-A0ID1CuLXIVZ91tRsJxwzL_t1ckTxFW8-v4U6B/exec";
-
-        let db = {
-            "Clientes": [],
-            "Inventario y Piezas": [],
-            "Pedidos y Servicios": [],
-            "Precios y Tarifas": [
-                {"ID Concepto": "TAR-01", "Categoria": "Corte Base", "Descripción": "Jamón (Corte completo loncheado)", "Precio Base (€)": 45, "Unidad": "Pieza", "Notas": ""},
-                {"ID Concepto": "TAR-02", "Categoria": "Corte Base", "Descripción": "Paleta (Corte completo loncheado)", "Precio Base (€)": 35, "Unidad": "Pieza", "Notas": ""},
-                {"ID Concepto": "TAR-03", "Categoria": "Suplementos", "Descripción": "Pieza muy jugosa / blanda", "Precio Base (€)": 8, "Unidad": "Pieza", "Notas": ""},
-                {"ID Concepto": "TAR-04", "Categoria": "Suplementos", "Descripción": "Pieza muy seca / dura", "Precio Base (€)": 10, "Unidad": "Pieza", "Notas": ""},
-                {"ID Concepto": "TAR-05", "Categoria": "Extras", "Descripción": "Cortar Huesos para caldo", "Precio Base (€)": 5, "Unidad": "Pieza", "Notas": ""}
-            ]
-        };
-
-        window.onload = function() {
-            loadFromLocalStorage();
-            renderAll();
-            syncWithGoogleSheet();
-        };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-jamon-900', 'text-gold-400', 'shadow-inner', 'border', 'border-gold-500/30');
-                btn.classList.add('hover:bg-jamon-700/60', 'text-slate-200');
-            });
-            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-            if(activeBtn) {
-                activeBtn.classList.add('bg-jamon-900', 'text-gold-400', 'shadow-inner', 'border', 'border-gold-500/30');
-                activeBtn.classList.remove('hover:bg-jamon-700/60', 'text-slate-200');
-            }
-        }
-
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('jamones_db');
-            if(saved) {
-                try { db = JSON.parse(saved); } catch(e) {}
-            }
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('jamones_db', JSON.stringify(db));
-        }
-
-        async function syncWithGoogleSheet() {
-            const icon = document.getElementById('syncIcon');
-            if(icon) icon.classList.add('fa-spin');
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getData`);
-                const data = await response.json();
-                if(data && Object.keys(data).length > 0) {
-                    db = data;
-                    saveToLocalStorage();
-                    renderAll();
-                    showToast("Sincronizado con Google Sheets correctamente");
-                }
-            } catch(error) {
-                console.log("Modo offline activo.");
-            } finally {
-                if(icon) icon.classList.remove('fa-spin');
-            }
-        }
-
-        async function sendToGoogleSheet(sheetName, rowData) {
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sheet: sheetName, row: rowData })
-                });
-            } catch(e) {
-                console.log("Error al enviar a Sheet:", e);
-            }
-        }
-
-        function renderAll() {
-            renderDashboard();
-            renderPedidos();
-            renderPiezas();
-            renderClientes();
-            renderTarifas();
-            poblarCotizador();
-            calcularPresupuestoReal();
-        }
-
-        function renderDashboard() {
-            document.getElementById('stat-pedidos').innerText = (db["Pedidos y Servicios"] || []).length;
-            document.getElementById('stat-piezas').innerText = (db["Inventario y Piezas"] || []).filter(p => p["Estado Pieza"] !== 'Entregado').length;
-            document.getElementById('stat-clientes').innerText = (db["Clientes"] || []).length;
-            
-            let total = (db["Pedidos y Servicios"] || []).reduce((acc, curr) => acc + Number(curr["Total A Cobrar (€)"] || 0), 0);
-            document.getElementById('stat-ingresos').innerText = total.toFixed(2) + ' €';
-        }
-
-        function renderPedidos() {
-            const tbody = document.getElementById('tabla-pedidos-body');
-            tbody.innerHTML = '';
-            (db["Pedidos y Servicios"] || []).forEach((ped, idx) => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-bold text-jamon-900">${ped["ID Pedido"] || '-'}<br><span class="text-[11px] font-normal text-slate-400">${ped["Fecha Pedido"] || ''}</span></td>
-                        <td class="p-4 font-medium">${ped["ID Cliente"] || '-'}</td>
-                        <td class="p-4 text-slate-600">${ped["ID Pieza"] || '-'}</td>
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${ped["Prioridad"] === 'Alta/Urgente' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}">${ped["Prioridad"] || 'Normal'}</span></td>
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">${ped["Estado Pedido"] || 'Pendiente'}</span></td>
-                        <td class="p-4 font-extrabold text-jamon-900">${ped["Total A Cobrar (€)"] || 0} €</td>
-                        <td class="p-4 text-right">
-                            <button onclick="eliminarRegistro('Pedidos y Servicios', ${idx})" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition inline-flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function renderPiezas() {
-            const grid = document.getElementById('grid-piezas');
-            grid.innerHTML = '';
-            (db["Inventario y Piezas"] || []).forEach((pieza, idx) => {
-                grid.innerHTML += `
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-4 relative hover:shadow-md transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-[10px] font-black tracking-wider text-gold-600 uppercase bg-gold-50 px-2.5 py-1 rounded-md border border-gold-200">${pieza["Tipo"] || 'Pieza'}</span>
-                                <h3 class="font-extrabold text-jamon-900 text-lg mt-1.5">${pieza["Marca/Origen"] || 'Sin marca'}</h3>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${pieza["Estado Pieza"] === 'Terminado' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${pieza["Estado Pieza"] || 'En espera'}</span>
-                        </div>
-                        <div class="text-xs space-y-2 text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                            <p class="flex justify-between"><span>Propietario:</span> <strong class="text-slate-800">${pieza["Cliente Propietario"] || '-'}</strong></p>
-                            <p class="flex justify-between"><span>Peso Entrada:</span> <strong class="text-slate-800">${pieza["Peso Entrada (kg)"] || 0} kg</strong></p>
-                            <p class="flex justify-between"><span>Sobres (Salida):</span> <strong class="text-slate-800">${pieza["Peso Salida Sobres (kg)"] || 0} kg</strong></p>
-                            <p class="flex justify-between"><span>Condición:</span> <strong class="text-slate-800">${pieza["Condición Pieza"] || 'Normal'}</strong></p>
-                        </div>
-                        <div class="pt-2 border-t flex justify-between items-center text-xs">
-                            <span class="text-slate-400 font-medium">ID: ${pieza["ID Pieza"] || '-'}</span>
-                            <button onclick="eliminarRegistro('Inventario y Piezas', ${idx})" class="text-red-500 hover:text-red-700 font-bold transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i> <span>Eliminar</span></button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderClientes() {
-            const tbody = document.getElementById('tabla-clientes-body');
-            tbody.innerHTML = '';
-            (db["Clientes"] || []).forEach((cli, idx) => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-bold text-jamon-900">${cli["Nombre Completo"] || '-'}</td>
-                        <td class="p-4"><a href="tel:${cli["Teléfono"]}" class="text-jamon-700 font-semibold underline hover:text-jamon-900">${cli["Teléfono"] || '-'}</a></td>
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-md bg-slate-100 text-xs font-semibold text-slate-700">${cli["Relación/Contacto"] || '-'}</span></td>
-                        <td class="p-4 text-xs text-slate-600">${cli["Preferencias de Corte"] || 'Ninguna'}</td>
-                        <td class="p-4 text-right">
-                            <button onclick="eliminarRegistro('Clientes', ${idx})" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition inline-flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function renderTarifas() {
-            const tbody = document.getElementById('tabla-tarifas-body');
-            tbody.innerHTML = '';
-            (db["Precios y Tarifas"] || []).forEach((tar) => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-jamon-50 text-jamon-800 text-xs font-bold border border-jamon-200">${tar["Categoria"] || '-'}</span></td>
-                        <td class="p-4 font-semibold text-slate-800">${tar["Descripción"] || '-'}</td>
-                        <td class="p-4 font-black text-jamon-900 text-base">${tar["Precio Base (€)"] || 0} €</td>
-                        <td class="p-4 text-xs text-slate-500 font-medium">${tar["Unidad"] || '-'}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function poblarCotizador() {
-            const tarifas = db["Precios y Tarifas"] || [];
-            const selectServicio = document.getElementById('cot-servicio');
-            selectServicio.innerHTML = '';
-            
-            tarifas.filter(t => t["Categoria"] === "Corte Base").forEach(t => {
-                selectServicio.innerHTML += `<option value="${t["Precio Base (€)"]}" data-nombre="${t["Descripción"]}">${t["Descripción"]} (${t["Precio Base (€)"]} €)</option>`;
-            });
-
-            const selectSuplemento = document.getElementById('cot-suplemento');
-            selectSuplemento.innerHTML = '<option value="0" data-nombre="Normal">Pieza en perfecto estado (Sin suplemento)</option>';
-            tarifas.filter(t => t["Categoria"] === "Suplementos").forEach(t => {
-                selectSuplemento.innerHTML += `<option value="${t["Precio Base (€)"]}" data-nombre="${t["Descripción"]}">${t["Descripción"]} (+${t["Precio Base (€)"]} €)</option>`;
-            });
-
-            const containerExtras = document.getElementById('cot-extras-container');
-            containerExtras.innerHTML = '';
-            tarifas.filter(t => t["Categoria"] === "Extras" || t["Categoria"] === "Otros").forEach((t) => {
-                containerExtras.innerHTML += `
-                    <label class="flex items-center space-x-3 text-xs font-semibold bg-slate-50 hover:bg-slate-100 p-3 rounded-xl border border-slate-200 cursor-pointer transition">
-                        <input type="checkbox" class="extra-chk rounded text-jamon-800 w-4 h-4" value="${t["Precio Base (€)"]}" data-nombre="${t["Descripción"]}" onchange="calcularPresupuestoReal()">
-                        <span class="text-slate-700">${t["Descripción"]} <strong class="text-jamon-900">(+${t["Precio Base (€)"]} €)</strong></span>
-                    </label>
-                `;
-            });
-        }
-
-        function cambiarModoCotizador() {
-            const modo = document.getElementById('cot-modo').value;
-            const labelTipo = document.getElementById('label-tipo-pieza');
-            if(modo === 'kilo') {
-                labelTipo.innerText = "Precio por Kilo (€/kg)";
-            } else {
-                labelTipo.innerText = "Servicio Base";
-            }
-            calcularPresupuestoReal();
-        }
-
-        function calcularPresupuestoReal() {
-            const modo = document.getElementById('cot-modo').value;
-            const kilos = Number(document.getElementById('cot-kilos').value) || 0;
-            const selectServicio = document.getElementById('cot-servicio');
-            const valorBase = selectServicio.selectedIndex >= 0 ? Number(selectServicio.value) : 0;
-            
-            let baseCalculada = 0;
-            let textoBaseDesc = "";
-
-            if(modo === 'kilo') {
-                baseCalculada = valorBase * kilos;
-                const nombreServ = selectServicio.options[selectServicio.selectedIndex]?.getAttribute('data-nombre') || 'Servicio';
-                textoBaseDesc = `• Cálculo por Kilo: ${kilos} kg × ${valorBase} €/kg = <strong>${baseCalculada.toFixed(2)} €</strong>`;
-            } else {
-                baseCalculada = valorBase;
-                const nombreServ = selectServicio.options[selectServicio.selectedIndex]?.getAttribute('data-nombre') || 'Servicio';
-                textoBaseDesc = `• Tarifa Fija (${nombreServ}): <strong>${baseCalculada.toFixed(2)} €</strong>`;
-            }
-
-            const selectSuplemento = document.getElementById('cot-suplemento');
-            const suplementoVal = selectSuplemento.selectedIndex >= 0 ? Number(selectSuplemento.value) : 0;
-            const nombreSupl = selectSuplemento.options[selectSuplemento.selectedIndex]?.getAttribute('data-nombre') || 'Normal';
-            let textoSuplDesc = suplementoVal > 0 ? `• Suplemento (${nombreSupl}): +${suplementoVal.toFixed(2)} €` : `• Condición pieza: Normal (Sin suplemento)`;
-
-            let extrasTotal = 0;
-            let extrasTextos = [];
-            document.querySelectorAll('.extra-chk:checked').forEach(chk => {
-                const val = Number(chk.value);
-                extrasTotal += val;
-                extrasTextos.push(`• ${chk.getAttribute('data-nombre')}: +${val.toFixed(2)} €`);
-            });
-
-            let total = baseCalculada + suplementoVal + extrasTotal;
-            document.getElementById('cot-total').innerText = total.toFixed(2) + ' €';
-
-            let desgloseHTML = `${textoBaseDesc}<br>${textoSuplDesc}`;
-            if(extrasTextos.length > 0) {
-                desgloseHTML += `<br>` + extrasTextos.join('<br>');
-            }
-            document.getElementById('cot-desglose').innerHTML = desgloseHTML;
-        }
-
-        function compartirWhatsAppPro() {
-            const kilos = document.getElementById('cot-kilos').value;
-            const selectServicio = document.getElementById('cot-servicio');
-            const servicioTexto = selectServicio.options[selectServicio.selectedIndex]?.getAttribute('data-nombre') || 'Corte de Jamón';
-            const selectSuplemento = document.getElementById('cot-suplemento');
-            const suplementoTexto = selectSuplemento.options[selectSuplemento.selectedIndex]?.getAttribute('data-nombre') || 'Normal';
-            const total = document.getElementById('cot-total').innerText;
-
-            let extrasLista = [];
-            document.querySelectorAll('.extra-chk:checked').forEach(chk => {
-                extrasLista.push(`- ${chk.getAttribute('data-nombre')} (+${chk.value}€)`);
-            });
-
-            let mensaje = `🍖 *COTIZACIÓN - MAESTRO JAMONERO* 🍖\n\n` +
-                          `¡Hola! Te compartimos el presupuesto detallado para el servicio de tu pieza:\n\n` +
-                          `🔸 *Servicio:* ${servicioTexto}\n` +
-                          `⚖️ *Peso registrado:* ${kilos} kg\n` +
-                          `🔍 *Estado de la pieza:* ${suplementoTexto}\n`;
-
-            if(extrasLista.length > 0) {
-                mensaje += `✨ *Extras:* \n` + extrasLista.join('\n') + `\n`;
-            }
-
-            mensaje += `\n💰 *IMPORTE TOTAL:* *${total}*\n\n` +
-                       `Incluye loncheado profesional a cuchillo, envasado al vacío en sobres individuales y empaquetado. ¿Te parece correcto para proceder?`;
-
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`, '_blank');
-        }
-
-        function openModal(tipo) {
-            const modal = document.getElementById('modal-general');
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
-            modal.classList.remove('hidden');
-
-            if(tipo === 'cliente') {
-                title.innerText = "Registrar Nuevo Cliente";
-                body.innerHTML = `
-                    <form onsubmit="guardarCliente(event)" class="space-y-4">
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nombre Completo</label><input type="text" id="cli-nombre" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-jamon-700 outline-none"></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Teléfono</label><input type="tel" id="cli-tel" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-jamon-700 outline-none"></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Relación</label><select id="cli-rel" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-jamon-700 outline-none"><option>Amigo</option><option>Familiar</option><option>Conocido</option></select></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Dirección / Zona</label><input type="text" id="cli-dir" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-jamon-700 outline-none"></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Preferencias de Corte</label><input type="text" id="cli-pref" placeholder="Ej: Sobres 100g, loncha fina" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-jamon-700 outline-none"></div>
-                        <button type="submit" class="w-full bg-jamon-900 hover:bg-jamon-800 text-gold-400 py-3.5 rounded-xl font-bold shadow-lg transition">Guardar Cliente</button>
-                    </form>
-                `;
-            } else if(tipo === 'pieza') {
-                title.innerText = "Registrar Nueva Pieza";
-                let clientesOpts = (db["Clientes"] || []).map(c => `<option value="${c["Nombre Completo"]}">${c["Nombre Completo"]}</option>`).join('');
-                body.innerHTML = `
-                    <form onsubmit="guardarPieza(event)" class="space-y-4">
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Propietario</label><select id="p-cliente" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-jamon-700 outline-none">${clientesOpts || '<option>Sin clientes</option>'}</select></div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tipo</label><select id="p-tipo" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white"><option>Jamón</option><option>Paleta</option></select></div>
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Marca / Origen</label><input type="text" id="p-marca" required class="w-full border border-slate-300 rounded-xl p-3 text-sm"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Peso Entrada (kg)</label><input type="number" id="p-peso" step="0.1" value="7.5" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-bold"></div>
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Condición</label><select id="p-cond" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white"><option>Normal</option><option>Muy jugosa / blanda</option><option>Muy seca / dura</option><option>Con moho / desperfecto</option></select></div>
-                        </div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Foto o Nota</label><input type="file" accept="image/*" capture="environment" id="p-foto" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50"></div>
-                        <button type="submit" class="w-full bg-jamon-900 hover:bg-jamon-800 text-gold-400 py-3.5 rounded-xl font-bold shadow-lg transition">Guardar Pieza</button>
-                    </form>
-                `;
-            } else if(tipo === 'pedido') {
-                title.innerText = "Crear Nuevo Pedido";
-                let clientesOpts = (db["Clientes"] || []).map(c => `<option value="${c["Nombre Completo"]}">${c["Nombre Completo"]}</option>`).join('');
-                let piezasOpts = (db["Inventario y Piezas"] || []).map(p => `<option value="${p["ID Pieza"]}">${p["Tipo"]} - ${p["Marca/Origen"]} (${p["Cliente Propietario"]})</option>`).join('');
-                body.innerHTML = `
-                    <form onsubmit="guardarPedido(event)" class="space-y-4">
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cliente</label><select id="ped-cli" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white">${clientesOpts}</select></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pieza Asociada</label><select id="ped-pieza" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white">${piezasOpts || '<option>Sin piezas</option>'}</select></div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Prioridad</label><select id="ped-prio" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white"><option>Normal</option><option>Alta/Urgente</option></select></div>
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Precio Total (€)</label><input type="number" id="ped-total" value="45" step="0.1" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-bold"></div>
-                        </div>
-                        <button type="submit" class="w-full bg-jamon-900 hover:bg-jamon-800 text-gold-400 py-3.5 rounded-xl font-bold shadow-lg transition">Crear Pedido</button>
-                    </form>
-                `;
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('modal-general').classList.add('hidden');
-        }
-
-        function guardarCliente(e) {
-            e.preventDefault();
-            const nuevo = {
-                "ID Cliente": "CLI-" + String(Date.now()).slice(-3),
-                "Nombre Completo": document.getElementById('cli-nombre').value,
-                "Teléfono": document.getElementById('cli-tel').value,
-                "Relación/Contacto": document.getElementById('cli-rel').value,
-                "Dirección / Zona": document.getElementById('cli-dir').value,
-                "Preferencias de Corte": document.getElementById('cli-pref').value,
-                "Confirmación Requisitos": "Sí",
-                "Notas": ""
-            };
-            if(!db["Clientes"]) db["Clientes"] = [];
-            db["Clientes"].push(nuevo);
-            saveToLocalStorage();
-            sendToGoogleSheet("Clientes", Object.values(nuevo));
-            closeModal();
-            renderAll();
-            showToast("Cliente guardado y sincronizado");
-        }
-
-        function guardarPieza(e) {
-            e.preventDefault();
-            const nueva = {
-                "ID Pieza": "PZ-" + String(Date.now()).slice(-3),
-                "Cliente Propietario": document.getElementById('p-cliente').value,
-                "Tipo": document.getElementById('p-tipo').value,
-                "Marca/Origen": document.getElementById('p-marca').value,
-                "Peso Entrada (kg)": Number(document.getElementById('p-peso').value),
-                "Peso Salida Sobres (kg)": 0,
-                "Estado Pieza": "En espera",
-                "Condición Pieza": document.getElementById('p-cond').value,
-                "Fecha Recepción": new Date().toISOString().split('T')[0],
-                "Notas/Observaciones": "Registrado desde app"
-            };
-            if(!db["Inventario y Piezas"]) db["Inventario y Piezas"] = [];
-            db["Inventario y Piezas"].push(nueva);
-            saveToLocalStorage();
-            sendToGoogleSheet("Inventario y Piezas", Object.values(nueva));
-            closeModal();
-            renderAll();
-            showToast("Pieza registrada y sincronizada");
-        }
-
-        function guardarPedido(e) {
-            e.preventDefault();
-            const nuevo = {
-                "ID Pedido": "PED-" + String(Date.now()).slice(-3),
-                "ID Cliente": document.getElementById('ped-cli').value,
-                "ID Pieza": document.getElementById('ped-pieza').value,
-                "Fecha Pedido": new Date().toISOString().split('T')[0],
-                "Prioridad": document.getElementById('ped-prio').value,
-                "Estado Pedido": "Pendiente",
-                "Precio Servicio Base (€)": Number(document.getElementById('ped-total').value),
-                "Suplementos Aplicados (€)": 0,
-                "Descuento (€)": 0,
-                "Total A Cobrar (€)": Number(document.getElementById('ped-total').value),
-                "Estado Pago": "Pendiente",
-                "Confirmación Cliente": "Confirmado",
-                "Observaciones": ""
-            };
-            if(!db["Pedidos y Servicios"]) db["Pedidos y Servicios"] = [];
-            db["Pedidos y Servicios"].push(nuevo);
-            saveToLocalStorage();
-            sendToGoogleSheet("Pedidos y Servicios", Object.values(nuevo));
-            closeModal();
-            renderAll();
-            showToast("Pedido creado y sincronizado");
-        }
-
-        function eliminarRegistro(sheetName, index) {
-            if(confirm("¿Seguro que deseas eliminar este registro?")) {
-                db[sheetName].splice(index, 1);
-                saveToLocalStorage();
-                renderAll();
-                showToast("Registro eliminado");
-            }
-        }
-
-        function showToast(msg) {
-            const div = document.createElement('div');
-            div.className = "fixed bottom-5 right-5 bg-jamon-900 text-gold-400 px-5 py-3 rounded-2xl shadow-2xl z-50 text-xs font-extrabold border border-gold-500/30 transition animate-bounce flex items-center space-x-2";
-            div.innerHTML = `<i class="fa-solid fa-circle-check text-base"></i> <span>${msg}</span>`;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3000);
-        }
-    </script>
-</body>
-</html>
+window.onload=()=>{load();render();sync(false)};
+</script></body></html>
